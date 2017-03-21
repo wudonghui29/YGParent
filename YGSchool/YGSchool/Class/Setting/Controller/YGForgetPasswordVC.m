@@ -26,7 +26,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.titleLbl.text = @"找回密码";
+    self.title = @"找回密码";
     self.rightBtn.hidden = YES;
     self.view.backgroundColor = COLOR_WITH_HEX(0xebeef3);
     [self addSubView];
@@ -130,39 +130,39 @@
     }
 
     
-    if([_phoneTXF.text isPhoneNumber]){
-        [YGNetWorkManager sendVerifyCodeWithParameter:parameter completion:^(id responseObject) {
-            NSLog(@"responseObject:%@",responseObject);
-            if([responseObject[@"code"] integerValue] ==1){
-                [YGNetWorkManager verifyWithParameter:parameter2 completion:^(id responseObject) {
-                    self.phoneType = YES;
-                    _phoneTXF.userInteractionEnabled = NO;
-                    _phoneTXF.textColor = [UIColor grayColor];
-                    self.timeNumber = 6;
-                    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(time:) userInfo:nil repeats:YES];
-                    [timer fire];
-                    
-                    NSLog(@"responseObject:%@",responseObject);
-                    if([responseObject[@"code"] integerValue] ==1){
-                        self.isCorrectCode = YES;
-                    }else{
-                        self.isCorrectCode = NO;
-                    }
-                } fail:^{
-                    
-                }];
-            }
-        } fail:^{
-            
-        }];
-
-    }else{
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"提示" message:@"手机号格式不正确" preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            
-        }]];
-        [self presentViewController:alert animated:YES completion:nil];
-    }
+//    if([_phoneTXF.text isPhoneNumber]){
+//        [YGNetWorkManager sendVerifyCodeWithParameter:parameter completion:^(id responseObject) {
+//            NSLog(@"responseObject:%@",responseObject);
+//            if([responseObject[@"code"] integerValue] ==1){
+//                [YGNetWorkManager verifyWithParameter:parameter2 completion:^(id responseObject) {
+//                    self.phoneType = YES;
+//                    _phoneTXF.userInteractionEnabled = NO;
+//                    _phoneTXF.textColor = [UIColor grayColor];
+//                    self.timeNumber = 6;
+//                    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(time:) userInfo:nil repeats:YES];
+//                    [timer fire];
+//                    
+//                    NSLog(@"responseObject:%@",responseObject);
+//                    if([responseObject[@"code"] integerValue] ==1){
+//                        self.isCorrectCode = YES;
+//                    }else{
+//                        self.isCorrectCode = NO;
+//                    }
+//                } fail:^{
+//                    
+//                }];
+//            }
+//        } fail:^{
+//            
+//        }];
+//
+//    }else{
+//        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"提示" message:@"手机号格式不正确" preferredStyle:UIAlertControllerStyleAlert];
+//        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+//            
+//        }]];
+//        [self presentViewController:alert animated:YES completion:nil];
+//    }
 }
 - (void)time:(NSTimer *)timer{
     self.sendVerifyCode.userInteractionEnabled = NO;
@@ -233,5 +233,8 @@
     } fail:^{
     }];
 
+}
+- (void)back{
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 @end

@@ -88,21 +88,27 @@
         
     }]];
     NSString *alertMessage;
-    if (!self.phoneType) {
+    if (self.phoneType) {
         alertMessage = @"请发送验证码";
     }else{
         if([_verifyTXF.text length] == 0){
             alertMessage = @"请输入验证码";
             }else{
-            NSMutableDictionary *parameter = [NSMutableDictionary dictionary];
-            [parameter setObject:@"register" forKey:@"event_code"];
-            [parameter setObject:_phoneTXF.text forKey:@"phone"];
-            [parameter setObject:_phoneTXF.text forKey:@"user_name"];
-            [parameter setObject:_verifyTXF.text forKey:@"sms_code"];
-            [YGNetWorkManager registerWithParameter:parameter completion:^(id responseObject) {
-            } fail:^{
-            }];
-            return;
+                [SMSSDK commitVerificationCode:self.verifyTXF.text phoneNumber:_phoneTXF.text zone:@"86" result:^(SMSSDKUserInfo *userInfo, NSError *error) {
+                    if (!error){
+                        NSLog(@"验证成功");
+//                        YGRegisterVC *registerVC = [[YGRegisterVC alloc] init];
+//                        registerVC.phone = _phoneTXF.text;
+//                        [self.navigationController pushViewController:registerVC animated:YES];
+                    }else{
+                        [MBProgressHUD showError:@"验证码错误"];
+                        YGRegisterVC *registerVC = [[YGRegisterVC alloc] init];
+                        registerVC.phone = _phoneTXF.text;
+                        [self.navigationController pushViewController:registerVC animated:YES];
+                        }
+                    
+                }];
+                return;
         }
         
     }

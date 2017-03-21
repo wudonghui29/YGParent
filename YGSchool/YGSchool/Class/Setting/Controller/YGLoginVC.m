@@ -129,7 +129,6 @@
         
     }]];
     NSString *alertMessage;
-    _phoneTXF.text = @"13632948837";
     if([_userTypeTXF.text length] ==0){
         alertMessage = @"请选择用户类型";
     }else if ([_phoneTXF.text length] ==0){
@@ -169,9 +168,9 @@
         [parameter setObject:str forKey:@"content"];
         NSLog(@"parameter:%@",parameter);
         [YGNetWorkManager loginWithParameter:parameter completion:^(id responseObject) {
+            NSLog(@"responseObject:%@",responseObject);
             if([responseObject[@"code"] integerValue] ==1){
                 NSDictionary *accountDic = responseObject[@"account"];
-                
                 YGUserData *userData = [YGLDataManager manager].userData;
                 userData.name = accountDic[@"name"];
                 userData.userName = accountDic[@"user_name"];
@@ -186,13 +185,16 @@
                 [account writeToFile:path atomically:YES];
 
                 userData.login = @"1";
+                [YGShow showRootViewController];
+                
             
             }
-            NSLog(@"responseObject:%@",responseObject);
+            else{
+        
+            }
         } fail:^{
             
         }];
-        [YGShow showRootViewController];
         return;
 
     }
@@ -211,7 +213,8 @@
 }
 - (void)forgetPasswordAction:(UIButton *)sender{
     YGForgetPasswordVC *forgetPasswordVC = [[YGForgetPasswordVC alloc] init];
-    [self presentViewController:forgetPasswordVC animated:YES completion:nil];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:forgetPasswordVC];
+    [self presentViewController:nav animated:YES completion:nil];
 }
 - (void)textFieldDidBeginEditing:(UITextField *)textField{
     if([textField isEqual:_userTypeTXF]){

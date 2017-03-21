@@ -10,26 +10,28 @@
 #import "YGCommon.h"
 @interface YGRegisterVC ()
 {
-    NSString *schoolId;
-    NSString *classId;
-    NSString *studentId;
     NSString *relation;
+    NSString *selectSchoolID;
+    NSString *selectClassID;
+    NSString *selectStudentID;
+
 }
 @property(nonatomic, strong) YGBoardView *registerView;
 @property(nonatomic, strong) YGRegisterShadeView *registerShadeView;
 @property(nonatomic, strong) UITextField *phoneTXF;
-@property(nonatomic, strong) UITextField *verifyTXF;
+//@property(nonatomic, strong) UITextField *verifyTXF;
 @property(nonatomic, strong) UITextField *nameTXF;
 @property(nonatomic, strong) UITextField *passwordTXF;
 @property(nonatomic, strong) UITextField *repasswordTXF;
 @property(nonatomic, strong) UIButton *registerBtn;
-@property(nonatomic, strong) UIButton *sendVerifyCode;
-@property(nonatomic, strong) UILabel *sendVerifyLabel;
 @property(nonatomic, assign) BOOL phoneType; //发送验证码状态
 @property(nonatomic, assign) NSInteger timeNumber;
 @property(nonatomic, strong) NSMutableArray *schoolArray;
 @property(nonatomic, strong) NSMutableArray *classArray;
 @property(nonatomic, strong) NSMutableArray *studentArray;
+@property(nonatomic, strong) YGShadeView *shadeView1;
+@property(nonatomic, strong) YGShadeView *shadeView2;
+@property(nonatomic, strong) YGShadeView *shadeView3;
 
 @end
 
@@ -63,7 +65,7 @@
 }
 - (YGBoardView *)registerView{
     if(!_registerView){
-        _registerView = [[YGBoardView alloc] initWithFrame:CGRectMake(10, 90, kScreenWidth - 20, 150)];
+        _registerView = [[YGBoardView alloc] initWithFrame:CGRectMake(10, 90, kScreenWidth - 20, 120)];
         [_registerView setLineNumber:4];
         [_registerView setCorner:UIRectCornerTopLeft|UIRectCornerTopRight];
     }
@@ -71,7 +73,7 @@
 }
 - (YGRegisterShadeView *)registerShadeView{
     if(!_registerShadeView){
-        _registerShadeView = [[YGRegisterShadeView alloc] initWithFrame:CGRectMake(0, 270, kScreenWidth, 120)];
+        _registerShadeView = [[YGRegisterShadeView alloc] initWithFrame:CGRectMake(0, 240, kScreenWidth, 120)];
     }
     return _registerShadeView;
 }
@@ -83,22 +85,19 @@
 - (void)addTXF{
     _phoneTXF = [[UITextField alloc] initWithFrame:CGRectMake(10, 0, kScreenWidth - 40, 30)];
     _phoneTXF.font = [UIFont systemFontOfSize:16];
-    _phoneTXF.placeholder = @"请输入您手机号码";
+    _phoneTXF.text = self.phone;
+    _phoneTXF.enabled = NO;
     [self.registerView addSubview:_phoneTXF];
-    _verifyTXF = [[UITextField alloc] initWithFrame:CGRectMake(10, 31, kScreenWidth - 40, 30)];
-    _verifyTXF.font = [UIFont systemFontOfSize:16];
-    _verifyTXF.placeholder = @"请输入验证码";
-    [self.registerView addSubview:_verifyTXF];
-    _nameTXF = [[UITextField alloc] initWithFrame:CGRectMake(10, 61, kScreenWidth - 40, 30)];
+    _nameTXF = [[UITextField alloc] initWithFrame:CGRectMake(10, 31, kScreenWidth - 40, 30)];
     _nameTXF.font = [UIFont systemFontOfSize:16];
     _nameTXF.placeholder = @"请输入您的姓名";
     [self.registerView addSubview:_nameTXF];
-    _passwordTXF = [[UITextField alloc] initWithFrame:CGRectMake(10, 91, kScreenWidth - 40, 30)];
+    _passwordTXF = [[UITextField alloc] initWithFrame:CGRectMake(10, 61, kScreenWidth - 40, 30)];
     _passwordTXF.font = [UIFont systemFontOfSize:16];
     _passwordTXF.secureTextEntry = YES;
     _passwordTXF.placeholder = @"请输入密码";
     [self.registerView addSubview:_passwordTXF];
-    _repasswordTXF = [[UITextField alloc] initWithFrame:CGRectMake(10, 121, kScreenWidth - 40, 30)];
+    _repasswordTXF = [[UITextField alloc] initWithFrame:CGRectMake(10, 91, kScreenWidth - 40, 30)];
     _repasswordTXF.secureTextEntry = YES;
     _repasswordTXF.font = [UIFont systemFontOfSize:16];
     _repasswordTXF.placeholder = @"请再次输入密码";
@@ -110,10 +109,15 @@
         [weakVC getSchoolList];
         YGShadeView *shadeView = [[YGShadeView alloc] initWithFrame:CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight)];
         __block YGShadeView *weakShadeView  = shadeView;
-        shadeView.titleArray = @[@"请选择您的孩子所在的学校",@"温州小学",@"温州小学2",@"塘下镇罗凤四小"];
-//        [weakVC.schoolArray insertObject:@"请选择您的孩子所在的学校" atIndex:0];
-//        shadeView.titleArray = weakVC.schoolArray;
+        _shadeView1 = shadeView;
         shadeView.chooseBlock = ^(NSString *title){
+            for(NSDictionary *dic in weakVC.schoolArray){
+                if([title isEqualToString:dic[@"name"]]){
+                    selectSchoolID = dic[@"school_id"];
+                    break;
+                }
+            }
+
             weakVC.registerShadeView.chooseSchTXF.text = title;
             // 获取所有的学校可以在控制器中，也可以在view中
             [weakShadeView dissmiss];
@@ -125,12 +129,16 @@
     self.registerShadeView.chooseClassBlock = ^{
         [self getClassList];
         YGShadeView *shadeView = [[YGShadeView alloc] initWithFrame:CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight)];
+        _shadeView2 = shadeView;
         __block YGShadeView *weakShadeView  = shadeView;
-        shadeView.titleArray = @[@"请选择您要关联的学生所在的班级",@"小学一年级(01)班",@"小学一年级(02)班",@"小学二年级(01)班",@"小学二年级(02)班",@"小学三年级(01)班",@"小学三年级(02)班",@"小学四年级(01)班",@"小学四年级(02)班",@"小学五年级(01)班",@"小学五年级(02)班",@"小学六年级(01)班",@"小学六年级(02)班"];
-//        [weakVC.classArray insertObject:@"请选择您要关联的学生所在的班级" atIndex:0];
-//        shadeView.titleArray = weakVC.classArray;
-        
         shadeView.chooseBlock = ^(NSString *title){
+            for(NSDictionary *dic in self.classArray){
+                if([title isEqualToString:dic[@"name"]]){
+                    selectClassID = dic[@"class_id"];
+                    break;
+                }
+            }
+
             weakVC.registerShadeView.chooseClassTXF.text = title;
             [weakShadeView dissmiss];
             [weakVC.registerShadeView showChooseStudent];
@@ -138,13 +146,18 @@
         [weakVC.view.window addSubview:shadeView];
     };
     self.registerShadeView.chooseStudentBlock = ^{
+        [self getStudentList];
         YGShadeView *shadeView = [[YGShadeView alloc] initWithFrame:CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight)];
+        _shadeView3 = shadeView;
         __block YGShadeView *weakShadeView  = shadeView;
-        shadeView.titleArray = @[@"请选择您要关联的学生",@"袁于海",@"金亮",@"吴海能"];
-        
-//        [weakVC.studentArray insertObject:@"请选择您要关联的学生" atIndex:0];
-//        shadeView.titleArray = weakVC.studentArray;
         shadeView.chooseBlock = ^(NSString *title){
+            for(NSDictionary *dic in self.studentArray){
+                if([title isEqualToString:dic[@"name"]]){
+                    selectStudentID = dic[@"student_id"];
+                    break;
+                }
+            }
+
             weakVC.registerShadeView.chooseStudentTXF.text = title;
             [weakShadeView dissmiss];
             //            [weakbindShadeView showChooseStudent];
@@ -153,7 +166,7 @@
     };
 }
 - (void)addBtn{
-    self.registerBtn = [[UIButton alloc] initWithFrame:CGRectMake(25, 410, kScreenWidth - 50, 35)];
+    self.registerBtn = [[UIButton alloc] initWithFrame:CGRectMake(25, 380, kScreenWidth - 50, 35)];
     self.registerBtn.layer.cornerRadius = 7;
     [self.registerBtn.layer setMasksToBounds:YES];
     [self.registerBtn setBackgroundColor:COLOR_WITH_HEX(0x4285d4)];
@@ -164,21 +177,6 @@
     
     UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(kScreenWidth - 125, 0, 1, 30)];
     lineView.backgroundColor = COLOR(221, 221, 221, 1);
-    [_verifyTXF addSubview:lineView];
-    _sendVerifyCode = [[UIButton alloc] initWithFrame:CGRectMake(kScreenWidth - 120, 5, 80, 20)];
-    _sendVerifyCode.layer.cornerRadius = 7;
-    _sendVerifyCode.layer.borderColor = [UIColor grayColor].CGColor;
-    _sendVerifyCode.layer.borderWidth = 1.0;
-    [_sendVerifyCode.layer setMasksToBounds:YES];
-    _sendVerifyCode.titleLabel.font = [UIFont systemFontOfSize:12];
-    [_sendVerifyCode setTitle:@"获取验证码" forState:UIControlStateNormal];
-    [_sendVerifyCode setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
-    [_sendVerifyCode addTarget:self action:@selector(sendVerifyCodeAction) forControlEvents:UIControlEventTouchUpInside];
-    [_verifyTXF addSubview:_sendVerifyCode];
-    _sendVerifyLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 80, 20)];
-    _sendVerifyLabel.font = [UIFont systemFontOfSize:12];
-    _sendVerifyLabel.textAlignment = NSTextAlignmentCenter;
-    [_sendVerifyCode addSubview:_sendVerifyLabel];
 }
 - (void)registerAction{
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"提醒" message:@"" preferredStyle:UIAlertControllerStyleAlert];
@@ -186,91 +184,49 @@
         
     }]];
     NSString *alertMessage;
-    if (!self.phoneType) {
-        alertMessage = @"请发送验证码";
+    if([_nameTXF.text length] ==0){
+        alertMessage = @"请输入您的姓名";
+    }else if ([_passwordTXF.text length]==0 || [_repasswordTXF.text length] ==0){
+        alertMessage = @"请输入密码";
+    }else if (![_passwordTXF.text isEqualToString:_repasswordTXF.text]){
+        alertMessage = @"两次密码不相同";
+    }else if ([self.registerShadeView.chooseSchTXF.text length] ==0 || selectSchoolID == nil){
+        alertMessage = @"请选择您的孩子所在的学校";
+    }else if ([self.registerShadeView.chooseClassTXF.text length] ==0 || selectClassID == nil){
+        alertMessage = @"请选择您要关联的学生所在的班级";
+    }else if ([self.registerShadeView.chooseStudentTXF.text length] ==0 || selectStudentID == nil){
+        alertMessage = @"请填写您要关联的学生";
+    }else if ([self.registerShadeView.relationTXF.text length] ==0){
+        alertMessage = @"请填写您和学生的关系";
     }else{
-        if([_verifyTXF.text length] == 0){
-            alertMessage = @"请输入验证码";
-        }else if([_nameTXF.text length] ==0){
-            alertMessage = @"请输入您的姓名";
-        }else if ([_passwordTXF.text length]==0 || [_repasswordTXF.text length] ==0){
-            alertMessage = @"请输入密码";
-        }else if (![_passwordTXF.text isEqualToString:_repasswordTXF.text]){
-            alertMessage = @"两次密码不相同";
-        }else if ([self.registerShadeView.chooseSchTXF.text length] ==0 || schoolId == nil){
-            alertMessage = @"请选择您的孩子所在的学校";
-        }else if ([self.registerShadeView.chooseClassTXF.text length] ==0 || classId == nil){
-            alertMessage = @"请选择您要关联的学生所在的班级";
-        }else if ([self.registerShadeView.chooseStudentTXF.text length] ==0 || studentId == nil){
-            alertMessage = @"请填写您要关联的学生";
-        }else if ([self.registerShadeView.relationTXF.text length] ==0 || relation == nil){
-            alertMessage = @"请填写您和学生的关系";
-        }else{
-            NSMutableDictionary *parameter = [NSMutableDictionary dictionary];
-            NSString *password = [_passwordTXF.text stringToMD5:_passwordTXF.text];
-            [parameter setObject:@"register" forKey:@"event_code"];
-            [parameter setObject:_phoneTXF.text forKey:@"phone"];
-            [parameter setObject:_phoneTXF.text forKey:@"user_name"];
-            [parameter setObject:_verifyTXF.text forKey:@"sms_code"];
-            [parameter setObject:_nameTXF.text forKey:@"name"];
-            [parameter setObject:password forKey:@"password"];
-            [parameter setObject:schoolId forKey:@"school_id"];
-            [parameter setObject:classId forKey:@"class_id"];
-            [parameter setObject:studentId forKey:@"student_id"];
-            [parameter setObject:self.registerShadeView.relationTXF.text forKey:@"relation"];
-            [YGNetWorkManager registerWithParameter:parameter completion:^(id responseObject) {
-                
-            } fail:^{
-            }];
-            return;
-        }
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        NSString *password = [_passwordTXF.text stringToMD5:_passwordTXF.text];
+        [dic setObject:@"register" forKey:@"event_code"];
+        [dic setObject:_phoneTXF.text forKey:@"phone"];
+        [dic setObject:_phoneTXF.text forKey:@"user_name"];
+        [dic setObject:@"0000" forKey:@"sms_code"];
 
+        [dic setObject:_nameTXF.text forKey:@"name"];
+        [dic setObject:_passwordTXF.text forKey:@"password"];
+        [dic setObject:selectSchoolID forKey:@"school_id"];
+        [dic setObject:selectClassID forKey:@"class_id"];
+        [dic setObject:selectStudentID forKey:@"student_id"];
+        [dic setObject:self.registerShadeView.relationTXF.text forKey:@"relation"];
+        NSMutableDictionary *parameter = [[NSMutableDictionary alloc] init];
+        NSString *str = [YGTools convertToJsonString:dic];
+        [parameter setObject:str forKey:@"content"];
+        [YGNetWorkManager registerWithParameter:parameter completion:^(id responseObject) {
+            NSLog(@"responseObject:%@",responseObject);
+            [MBProgressHUD showSuccess:@"注册成功"];
+            YGLoginVC *loginVC = [[YGLoginVC alloc] init];
+            
+            [self presentViewController:loginVC animated:YES completion:nil];
+        } fail:^{
+        }];
+        return;
     }
     alert.message = alertMessage;
     [self presentViewController:alert animated:YES completion:nil];
-}
-- (void)sendVerifyCodeAction{
-    if([_phoneTXF.text isPhoneNumber]){
-        [SMSSDK getVerificationCodeByMethod:SMSGetCodeMethodSMS phoneNumber:_phoneTXF.text zone:@"86" customIdentifier:nil result:^(NSError *error) {
-            if(!error){
-                NSLog(@"获取验证码成功");
-                [MBProgressHUD showSuccess:@"发送验证码成功"];
-                self.phoneType = YES;
-                _phoneTXF.userInteractionEnabled = NO;
-                _phoneTXF.textColor = [UIColor grayColor];
-                self.timeNumber = 6;
-                NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(time:) userInfo:nil repeats:YES];
-                [timer fire];
-
-            }else{
-                NSLog(@"错误信息：%@",error);
-                self.phoneType = NO;
-            }
-        }];
-    }else{
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"提示" message:@"手机号格式不正确" preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            
-        }]];
-        [self presentViewController:alert animated:YES completion:nil];
-    }
-}
-- (void)time:(NSTimer *)timer{
-    self.sendVerifyCode.userInteractionEnabled = NO;
-    self.sendVerifyLabel.text = [NSString stringWithFormat:@"%ldS再发送",self.timeNumber];
-    self.sendVerifyCode.backgroundColor = [UIColor grayColor];
-    _phoneTXF.userInteractionEnabled = NO;
-    _phoneTXF.textColor = [UIColor grayColor];
-    self.timeNumber--;
-    if (self.timeNumber < 0) {
-        [timer invalidate];
-        timer = nil;
-        self.sendVerifyCode.userInteractionEnabled =YES;
-        self.sendVerifyLabel.text = @"发送验证码";
-//        self.FaSongBtn.backgroundColor = DefaultColor;
-        _phoneTXF.userInteractionEnabled = YES;
-        _phoneTXF.textColor = [UIColor blackColor];
-    }
 }
 - (void)getSchoolList{
     NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
@@ -281,34 +237,58 @@
     NSLog(@"parameter:%@",parameter);
     [YGNetWorkManager getSchoolListWithParameter:parameter completion:^(id responseObject) {
         NSLog(@"responseObject:%@",responseObject);
-        _schoolArray = responseObject[@"list"];
+        self.schoolArray = responseObject[@"list"];
+        NSMutableArray *a = [[NSMutableArray alloc] initWithObjects:@"请选择您的孩子所在的学校", nil];
+        for(int i = 0; i < self.schoolArray.count; i++){
+            NSDictionary *dic = self.schoolArray[i];
+            [a addObject:dic[@"name"]];
+        }
+        _shadeView1.titleArray = a;
     } fail:^{
         NSLog(@"");
     }];
 }
+
 - (void)getClassList{
     NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
     [dic setObject:@"classList" forKey:@"event_code"];
-    [dic setObject:@"1001" forKey:@"school_id"];
+    [dic setObject:selectSchoolID forKey:@"school_id"];
     NSMutableDictionary *parameter = [[NSMutableDictionary alloc] init];
     NSString *str = [YGTools convertToJsonString:dic];
     [parameter setObject:str forKey:@"content"];
     [YGNetWorkManager getClassListWithParameter:parameter completion:^(id responseObject) {
         NSLog(@"responseObject:%@",responseObject);
+        self.classArray = responseObject[@"list"];
+        NSMutableArray *a = [[NSMutableArray alloc] initWithObjects:@"请选择您要关联的学生所在的班级", nil];
+        for(int i = 0; i < self.classArray.count; i++){
+            NSDictionary *dic = self.classArray[i];
+            [a addObject:dic[@"name"]];
+        }
+        _shadeView2.titleArray = a;
+        
     } fail:^{
         
     }];
 }
+
 - (void)getStudentList{
     NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
     [dic setObject:@"studentList" forKey:@"event_code"];
-    [dic setObject:@"studentList" forKey:@"account_id"];
-    [dic setObject:@"studentList" forKey:@"class_id"];
+    [dic setObject:selectSchoolID forKey:@"school_id"];
+    [dic setObject:selectClassID forKey:@"class_id"];
     NSMutableDictionary *parameter = [[NSMutableDictionary alloc] init];
     NSString *str = [YGTools convertToJsonString:dic];
     [parameter setObject:str forKey:@"content"];
     [YGNetWorkManager getStudentListWithParameter:parameter completion:^(id responseObject) {
         NSLog(@"responseObject:%@",responseObject);
+        self.studentArray = responseObject[@"list"];
+        NSMutableArray *a = [[NSMutableArray alloc] initWithObjects:@"请选择您要关联的学生", nil];
+        for(int i = 0; i < self.studentArray.count; i++){
+            NSDictionary *dic = self.studentArray[i];
+            [a addObject:dic[@"name"]];
+        }
+        _shadeView3.titleArray = a;
+        
     } fail:^{
         
     }];

@@ -9,5 +9,5 @@
 #import "YGBaseViewController.h"
 
 @interface YGRegisterVC : YGBaseViewController
-
+@property(nonatomic, strong) NSString *phone;
 @end
